@@ -16,16 +16,11 @@ const major = semver[0];
 
 const prompts = require('prompts');
 const chalk = require('chalk');
+const argv = require('yargs').argv;
 
-const program = require('commander');
-const version = require('../package.json').version;
-
-program
-	.version(version, '-v, --vers', 'output the current version')
-	.parse(process.argv);
 
 (async () => {
-	const response = await prompts({
+	const response = argv.y || await prompts({
 		type: 'confirm',
 		name: 'value',
 		message: `Do you want to install ${chalk.white.bgGreen(
@@ -33,7 +28,7 @@ program
 		)} in the current directory?\n${chalk.red(process.cwd())}`,
 	});
 
-	if (response.value) {
+	if (response || response.value) {
 		// If below Node 8.
 		if (8 > major) {
 			console.error(
