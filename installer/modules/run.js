@@ -68,18 +68,18 @@ module.exports = () => {
 		.then(() => {
 			spinner.succeed();
 			spinner.start('4. Installing WordPress...');
-			return execa('wp', ['config', 'create', '--dbname=test', `--dbuser=${settings.wordpress.dbuser}`, `--dbpass=${settings.wordpress.dbpass}`, `--dbhost=${dbhost}`, '--force', `--path=${theCWD}/build/wordpress`]);
+			return execa('wp', ['config', 'create', '--dbname=testing', `--dbuser=${settings.wordpress.dbuser}`, `--dbpass=${settings.wordpress.dbpass}`, `--dbhost=${settings.wordpress.dbhost}`, '--force', `--path=${theCWD}/build/wordpress`]);
 		})
 		.then(() => execa('wp', ['core', 'install', '--url=http://127.0.0.1:3020', '--title=Test Site', `--admin_user=${settings.wordpress.admin_user}`, `--admin_password=${settings.wordpress.admin_password}`, `--admin_email=${settings.wordpress.admin_email}`, '--skip-email', `--path=${theCWD}/build/wordpress`]))
 
-		.then(() => execa('wp', ['option', 'update', 'timezone_string', 'America/Chicago', `--path=${theCWD}/build/wordpress`]))
-		.then(() => execa('wp', ['option', 'update', 'start_of_week', '0', `--path=${theCWD}/build/wordpress`]))
 		.then(() => execa('wp', ['option', 'update', 'siteurl', 'http://127.0.0.1:3020', `--path=${theCWD}/build/wordpress`]))
 		.then(() => execa('wp', ['option', 'update', 'home', 'http://127.0.0.1:3020', `--path=${theCWD}/build/wordpress`]))
+		.then(() => Promise.all(settings.wordpress.options.map(option => execa('wp', ['option', 'update', option.option, option.value, `--path=${theCWD}/build/wordpress`]))))
 
 		.then(() => execa('wp', ['rewrite', 'structure', '/%postname%/', `--path=${theCWD}/build/wordpress`]))
 
 		.then(() => execa('wp', ['plugin', 'uninstall', '--all', '--deactivate', `--path=${theCWD}/build/wordpress`]))
+		.then(() => Promise.all(settings.wordpress.plugins.map(plugin => execa('wp', ['plugin', 'install', plugin, '--activate', `--path=${theCWD}/build/wordpress`]))))
 
 		.then(() => execa('wp', ['post', 'delete', '1', '2', '3', '--force', `--path=${theCWD}/build/wordpress`]))
 
